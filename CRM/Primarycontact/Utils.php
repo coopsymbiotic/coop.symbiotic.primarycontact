@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Class CRM_Mosaico_Utils
+ * Class CRM_Primarycontact_Utils
  */
 class CRM_Primarycontact_Utils {
 

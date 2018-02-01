@@ -296,7 +296,10 @@ function primarycontact_civicrm_tokens( &$tokens ) {
   $relationship_type_id = CRM_Primarycontact_Utils::getRelationshipTypeID();
   if ($relationship_type_id) {
     $tokens['primarycontact'] = array(
-      'primarycontact.renewlink' => E::ts("Primary Contact: renew link"),
+      'primarycontact.renewlink' => E::ts('Primary Contact: Renew link (add &id=XX)'),
+      'primarycontact.firstname' => E::ts('Primary Contact: First name'),
+      'primarycontact.lastname' => E::ts('Primary Contact: Last name'),
+      //'primarycontact.organization' => E::ts('Primary Contact: Organization'),
     );
   }
 }
@@ -322,11 +325,13 @@ function primarycontact_civicrm_tokenValues(&$values, $cids, $job = null, $token
     }
 
     // if organization, get primary contact otherwise keep the individual contact
+    // TODO: replace by an API call (unless it's too slow)
     $sql = "
-SELECT r.contact_id_b as cid, r.contact_id_a as main_contact
+SELECT r.contact_id_b as cid, r.contact_id_a as primary_contact_id
 FROM civicrm_relationship r
 WHERE r.relationship_type_id = %1
-AND r.contact_id_b IN ($contacts)";
+AND r.contact_id_b IN ($contacts)
+AND r.is_active = 1";
 
     //watchdog('debug', 'sql -- $sql);
     $dao = &CRM_Core_DAO::executeQuery(
@@ -335,14 +340,23 @@ AND r.contact_id_b IN ($contacts)";
     );
     while ($dao->fetch()) {
       $cid = $dao->cid;
-      $targetcid[$cid] = $dao->main_contact;
+      $targetcid[$cid] = $dao->primary_contact_id;
     }
 
     foreach ($targetcid as $cid => $tcid) {
+      // renew link
       $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($tcid);
-      $formId = 2;  // TODO: get the default renew form or quit
-      $url = CRM_Utils_System::url('civicrm/contribute/transact', "reset=1&id={$formId}&cid={$tcid}&cs={$cs}", TRUE);
+
+      // For now, let the user add &id=2 at the end of the link for extra flexibility
+      // TODO: get the default renew form or let the user add &id=2 at the end of the link for extra flexibility
+      // $formId = 2;
+      $url = CRM_Utils_System::url('civicrm/contribute/transact', "reset=1&cid={$tcid}&cs={$cs}", TRUE, NULL, NULL, TRUE);
       $values[$cid]['primarycontact.renewlink'] = $url;
+
+      // individual contact info
+      $primarycontact = civicrm_api('contact', 'getsingle', array('version' => 3, 'contact_id' => $tcid));
+      $values[$cid]['primarycontact.firstname'] = $primarycontact['first_name'];
+      $values[$cid]['primarycontact.lastname'] = $primarycontact['last_name'];
     }
   }
 
