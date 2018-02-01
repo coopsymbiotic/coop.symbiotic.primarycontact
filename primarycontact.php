@@ -296,7 +296,7 @@ function primarycontact_civicrm_tokens( &$tokens ) {
   $relationship_type_id = CRM_Primarycontact_Utils::getRelationshipTypeID();
   if ($relationship_type_id) {
     $tokens['primarycontact'] = array(
-      'primarycontact.renew' => E::ts("Primary Contact: renew link"),
+      'primarycontact.renewlink' => E::ts("Primary Contact: renew link"),
     );
   }
 }
@@ -308,10 +308,8 @@ function primarycontact_civicrm_tokens( &$tokens ) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_tokens
  */
 function primarycontact_civicrm_tokenValues(&$values, $cids, $job = null, $tokens = array(), $context = null) {
-
   $relationship_type_id = CRM_Primarycontact_Utils::getRelationshipTypeID();
   if ($relationship_type_id) {
-
     $contacts = implode(',', $cids);
     $tokens += array(
       'primarycontact' => array(),
@@ -333,7 +331,7 @@ AND r.contact_id_b IN ($contacts)";
     //watchdog('debug', 'sql -- $sql);
     $dao = &CRM_Core_DAO::executeQuery(
       $sql,
-      array(1 => array('Integer', $relationship_type_id))
+      array(1 => array($relationship_type_id, 'Integer'))
     );
     while ($dao->fetch()) {
       $cid = $dao->cid;
@@ -342,8 +340,9 @@ AND r.contact_id_b IN ($contacts)";
 
     foreach ($targetcid as $cid => $tcid) {
       $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($tcid);
-      $url = CRM_Utils_System::url('civicrm/contribute/transact', "reset=1&id=2&cid={$tcid}&cs={$cs}", TRUE);
-      $values[$cid]['link.renew'] = $url;
+      $formId = 2;  // TODO: get the default renew form or quit
+      $url = CRM_Utils_System::url('civicrm/contribute/transact', "reset=1&id={$formId}&cid={$tcid}&cs={$cs}", TRUE);
+      $values[$cid]['primarycontact.renewlink'] = $url;
     }
   }
 

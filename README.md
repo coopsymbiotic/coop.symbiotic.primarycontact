@@ -37,8 +37,16 @@ cv en primarycontact
 
 ## Usage
 
-(* FIXME: Where would a new user navigate to get started? What changes would they see? *)
+* create a new relationship type that represents the Primary contact relationship. 
+* get the id of this relationship type and init the configuration using the api :
+
+```php
+$result = civicrm_api3('Setting', 'create', array(
+  'sequential' => 1,
+  'primarycontact_relationship_type_id' => XX, 
+));
+```
 
 ## Known Issues
 
-(* FIXME *)
+
