@@ -128,7 +128,7 @@ function primarycontact_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 
 // FIXME: preProcess hook doesn't work before CiviCRM 4.5
 // TODO: test that it works now in CiviCRM 4.7+ -- is it still usefull ?
-/*function maincontact_civicrm_preProcess($formName, &$form) {
+/*function primarycontact_civicrm_preProcess($formName, &$form) {
 
   // for organization contribution form, initialize on behalf with main contact relationship instead of employee relationship
   // FIXME: for now, just assuming employer relationship is created and rely on this to get the org infos - cf. redmine:16449
@@ -171,15 +171,13 @@ function primarycontact_civicrm_post($op, $objectName, $id, &$params) {
   // ensure that we have only one primary contact by deactivating previous ones
   // for new primary contact relationship, add proper permissions
   if ($objectName == 'Relationship' && ($op == 'create' || $op == 'edit')) {
-    //watchdog('debug', print_r($params,1));
 
     $relationship_type_id = CRM_Primarycontact_Utils::getRelationshipTypeID();
 
     // primary contact relationship ?
-    //watchdog('debug', var_export( _maincontact_is_current($params), 1));
     if ($relationship_type_id && $params->relationship_type_id == $relationship_type_id && CRM_Primarycontact_Utils::isCurrentRelationship($id, $params)) {
 
-      // find all others active maincontact relationships for this org and disable them
+      // find all others active primary contact relationships for this org and disable them
       $p = array(
         'filters' => array('is_current' => 1),
         'relationship_type_id' => $relationship_type_id,
@@ -188,7 +186,6 @@ function primarycontact_civicrm_post($op, $objectName, $id, &$params) {
       );
 
       $result = civicrm_api3('relationship', 'get', $p);
-//      watchdog('debug', '(maincontact_civicrm_post) relationships -- ' . print_r($result, 1));
       foreach ($result['values'] as $relid => $rel) {
         $rel['is_active'] = 0;
         civicrm_api3('relationship', 'create', $rel);
@@ -217,7 +214,6 @@ function primarycontact_civicrm_post($op, $objectName, $id, &$params) {
         3 => array($params->contact_id_b, 'Integer'),
         4 => array($relTypeId, 'Integer'),
       );
-      //watchdog('debug', 'employer upd -- '.  $sql . ' -- ' . print_r($sqlp, 1));
       CRM_Core_DAO::executeQuery($sql, $sqlp);
     }
   }
@@ -278,7 +274,7 @@ function primarycontact_civicrm_postProcess($formName, &$form) {
         );
 
         $result = civicrm_api('Relationship', 'create', $params);
-        //watchdog('debug', 'res -- ' . print_r($result, 1));
+
       }
 
     }
@@ -297,9 +293,9 @@ function primarycontact_civicrm_tokens( &$tokens ) {
   if ($relationship_type_id) {
     $tokens['primarycontact'] = array(
       'primarycontact.renewlink' => E::ts('Primary Contact: Renew link (add &id=XX)'),
-      'primarycontact.firstname' => E::ts('Primary Contact: First name'),
-      'primarycontact.lastname' => E::ts('Primary Contact: Last name'),
-      //'primarycontact.organization' => E::ts('Primary Contact: Organization'),
+      'primarycontact.first_name' => E::ts('Primary Contact: First name'),
+      'primarycontact.last_name' => E::ts('Primary Contact: Last name'),
+      'primarycontact.organization' => E::ts('Primary Contact: Organization'),
     );
   }
 }
@@ -319,50 +315,52 @@ function primarycontact_civicrm_tokenValues(&$values, $cids, $job = null, $token
     );
 
     // defaults
-    $targetcid = array();
+    $primarycontacts = array();
     foreach ($cids as $cid) {
-      $targetcid[$cid] = $cid;
+      $primarycontacts[$cid]['target_id'] = $cid;
     }
 
-    // if organization, get primary contact otherwise keep the individual contact
-    // TODO: replace by an API call (unless it's too slow)
-    $sql = "
-SELECT r.contact_id_b as cid, r.contact_id_a as primary_contact_id
-FROM civicrm_relationship r
-WHERE r.relationship_type_id = %1
-AND r.contact_id_b IN ($contacts)
-AND r.is_active = 1";
+    // get extra info about current contact
+    $dao = &CRM_Core_DAO::executeQuery("
+      SELECT id, first_name, last_name, organization_name as organization
+      FROM civicrm_contact
+      WHERE id IN ($contacts)"
+    );
+    while ($dao->fetch()) {
+      $primarycontacts[$dao->id]['first_name'] = $dao->first_name;
+      $primarycontacts[$dao->id]['last_name'] = $dao->last_name;
+      $primarycontacts[$dao->id]['organization'] = $dao->organization;
+    }
 
-    //watchdog('debug', 'sql -- $sql);
-    $dao = &CRM_Core_DAO::executeQuery(
-      $sql,
+    // if conctact is an organization, get main contact otherwise keep the individual contact
+    $dao = &CRM_Core_DAO::executeQuery("
+      SELECT r.contact_id_b as cid, r.contact_id_a as primary_id, c.first_name, c.last_name, org.display_name as organization
+      FROM civicrm_relationship r
+        INNER JOIN civicrm_contact c ON c.id = r.contact_id_a
+        INNER JOIN civicrm_contact org ON org.id = r.contact_id_b
+      WHERE r.relationship_type_id = %1
+        AND r.contact_id_b IN ($contacts)",
       array(1 => array($relationship_type_id, 'Integer'))
     );
     while ($dao->fetch()) {
       $cid = $dao->cid;
-      $targetcid[$cid] = $dao->primary_contact_id;
+      $primarycontacts[$cid]['target_id'] = $dao->primary_id;
+      $primarycontacts[$cid]['first_name'] = $dao->first_name;
+      $primarycontacts[$cid]['last_name'] = $dao->last_name;
+      $primarycontacts[$cid]['organization'] = $dao->organization;
     }
 
-    foreach ($targetcid as $cid => $tcid) {
-      // renew link
+    // now update the tokens
+    foreach ($primarycontacts as $cid => $data) {
+      $tcid = $data['target_id']
       $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($tcid);
-
-      // For now, let the user add &id=2 at the end of the link for extra flexibility
-      // TODO: get the default renew form or let the user add &id=2 at the end of the link for extra flexibility
-      // $formId = 2;
       $url = CRM_Utils_System::url('civicrm/contribute/transact', "reset=1&cid={$tcid}&cs={$cs}", TRUE, NULL, NULL, TRUE);
       $values[$cid]['primarycontact.renewlink'] = $url;
-
-      // individual contact info
-      $primarycontact = civicrm_api('contact', 'getsingle', array('version' => 3, 'contact_id' => $tcid));
-      $values[$cid]['primarycontact.firstname'] = $primarycontact['first_name'];
-      $values[$cid]['primarycontact.lastname'] = $primarycontact['last_name'];
+      $values[$cid]['primarycontact.first_name'] = $data['first_name'];
+      $values[$cid]['primarycontact.last_name'] = $data['last_name'];
+      $values[$cid]['primarycontact.organization'] = $data['organization'];
     }
+
   }
 
 }
-
-
-
-
-
