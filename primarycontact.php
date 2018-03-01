@@ -352,7 +352,7 @@ function primarycontact_civicrm_tokenValues(&$values, $cids, $job = null, $token
 
     // now update the tokens
     foreach ($primarycontacts as $cid => $data) {
-      $tcid = $data['target_id']
+      $tcid = $data['target_id'];
       $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($tcid);
       $url = CRM_Utils_System::url('civicrm/contribute/transact', "reset=1&cid={$tcid}&cs={$cs}", TRUE, NULL, NULL, TRUE);
       $values[$cid]['primarycontact.renewlink'] = $url;
