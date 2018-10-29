@@ -296,6 +296,8 @@ function primarycontact_civicrm_tokens( &$tokens ) {
       'primarycontact.first_name' => E::ts('Primary Contact: First name'),
       'primarycontact.last_name' => E::ts('Primary Contact: Last name'),
       'primarycontact.organization' => E::ts('Primary Contact: Organization'),
+      'primarycontact.organization_id' => E::ts('Primary Contact: Organization ID'),
+      'primarycontact.organization_checksum' => E::ts('Primary Contact: Organization Checksum'),
     );
   }
 }
@@ -318,6 +320,7 @@ function primarycontact_civicrm_tokenValues(&$values, $cids, $job = null, $token
     $primarycontacts = array();
     foreach ($cids as $cid) {
       $primarycontacts[$cid]['target_id'] = $cid;
+      $primarycontacts[$cid]['organization_id'] = $cid;
     }
 
     // get extra info about current contact
@@ -332,7 +335,7 @@ function primarycontact_civicrm_tokenValues(&$values, $cids, $job = null, $token
       $primarycontacts[$dao->id]['organization'] = $dao->organization;
     }
 
-    // if conctact is an organization, get main contact otherwise keep the individual contact
+    // if contact is an organization, get main contact otherwise keep the individual contact
     $dao = &CRM_Core_DAO::executeQuery("
       SELECT r.contact_id_b as cid, r.contact_id_a as primary_id, c.first_name, c.last_name, org.display_name as organization
       FROM civicrm_relationship r
@@ -350,15 +353,32 @@ function primarycontact_civicrm_tokenValues(&$values, $cids, $job = null, $token
       $primarycontacts[$cid]['organization'] = $dao->organization;
     }
 
+    // if contact is an individual, get the organization id
+    $dao = &CRM_Core_DAO::executeQuery("
+      SELECT r.contact_id_b as cid, r.contact_id_a as primary_id, c.first_name, c.last_name, org.display_name as organization
+      FROM civicrm_relationship r
+        INNER JOIN civicrm_contact c ON c.id = r.contact_id_a
+        INNER JOIN civicrm_contact org ON org.id = r.contact_id_b
+      WHERE r.relationship_type_id = %1
+        AND r.contact_id_a IN ($contacts)",
+      array(1 => array($relationship_type_id, 'Integer'))
+    );
+    while ($dao->fetch()) {
+      $primarycontacts[$cid]['organization_id'] = $dao->cid;
+    }
+
     // now update the tokens
     foreach ($primarycontacts as $cid => $data) {
       $tcid = $data['target_id'];
       $cs = CRM_Contact_BAO_Contact_Utils::generateChecksum($tcid);
+      $orgcs = CRM_Contact_BAO_Contact_Utils::generateChecksum($data['organization_id']);
       $url = CRM_Utils_System::url('civicrm/contribute/transact', "reset=1&cid={$tcid}&cs={$cs}", TRUE, NULL, NULL, TRUE);
       $values[$cid]['primarycontact.renewlink'] = $url;
       $values[$cid]['primarycontact.first_name'] = $data['first_name'];
       $values[$cid]['primarycontact.last_name'] = $data['last_name'];
       $values[$cid]['primarycontact.organization'] = $data['organization'];
+      $values[$cid]['primarycontact.organization_id'] = $data['organization_id'];
+      $values[$cid]['primarycontact.organization_checksum'] = $orgcs;
     }
 
   }
