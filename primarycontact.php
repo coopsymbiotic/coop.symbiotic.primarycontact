@@ -125,42 +125,6 @@ function primarycontact_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 
 
 
-
-// FIXME: preProcess hook doesn't work before CiviCRM 4.5
-// TODO: test that it works now in CiviCRM 4.7+ -- is it still usefull ?
-/*function primarycontact_civicrm_preProcess($formName, &$form) {
-
-  // for organization contribution form, initialize on behalf with main contact relationship instead of employee relationship
-  // FIXME: for now, just assuming employer relationship is created and rely on this to get the org infos - cf. redmine:16449
-
-  if ( is_a( $form, 'CRM_Contribute_Form_Contribution_OnBehalfOf') ) {
-
-    $relationship_type_id = CRM_Primarycontact_Utils::getRelationshipTypeID();
-
-    // on behalf profile is there
-    if ($relationship_type_id && $form->_profileId && CRM_Core_DAO::getFieldValue('CRM_Core_DAO_UFGroup', $form->_profileId, 'is_active')) {
-
-      // get permissionned main contact relationship
-      $contactID = $form->_contactID;
-      $form->_employers = CRM_Contact_BAO_Relationship::getPermissionedContacts($contactID, $relationship_type_id);
-
-      if (count($form->_employers) == 1) {
-        foreach ($form->_employers as $id => $value) {
-          $form->_organizationName = $value['name'];
-          $orgId = $id;
-        }
-        $form->assign('orgId', $orgId);
-        $form->assign('organizationName', $form->_organizationName);
-      }
-
-    }
-  }
-
-}*/
-
-
-
-
 /**
  * Implements hook_civicrm_post().
  *
