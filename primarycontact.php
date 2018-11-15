@@ -273,6 +273,10 @@ function primarycontact_civicrm_tokens( &$tokens ) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_tokens
  */
 function primarycontact_civicrm_tokenValues(&$values, $cids, $job = null, $tokens = array(), $context = null) {
+  if (empty($cids)) {
+    return;
+  }
+
   $relationship_type_id = CRM_Primarycontact_Utils::getRelationshipTypeID();
   if ($relationship_type_id) {
     $contacts = implode(',', $cids);
