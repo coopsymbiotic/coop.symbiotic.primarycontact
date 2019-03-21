@@ -262,6 +262,8 @@ function primarycontact_civicrm_tokens( &$tokens ) {
       'primarycontact.organization' => E::ts('Primary Contact: Organization'),
       'primarycontact.organization_id' => E::ts('Primary Contact: Organization ID'),
       'primarycontact.organization_checksum' => E::ts('Primary Contact: Organization Checksum'),
+      'primarycontact.primary_checksum' => E::ts('Primary Contact: Primary Contact Checksum'),
+      'primarycontact.primary_contact_id' => E::ts('Primary Contact: Primary Contact ID'),
     );
   }
 }
@@ -343,6 +345,8 @@ function primarycontact_civicrm_tokenValues(&$values, $cids, $job = null, $token
       $values[$cid]['primarycontact.organization'] = $data['organization'];
       $values[$cid]['primarycontact.organization_id'] = $data['organization_id'];
       $values[$cid]['primarycontact.organization_checksum'] = $orgcs;
+      $values[$cid]['primarycontact.primary_checksum'] = $cs;
+      $values[$cid]['primarycontact.primary_contact_id'] = $tcid;
     }
 
   }
