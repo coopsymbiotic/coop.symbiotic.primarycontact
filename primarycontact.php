@@ -124,6 +124,25 @@ function primarycontact_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
 }
 
 
+/**
+ * Implements hook_civicrm_navigationMenu().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_navigationMenu
+ */
+function primarycontact_civicrm_navigationMenu(&$menu) {
+  _primarycontact_civix_insert_navigation_menu($menu, 'Administer/Customize Data and Screens', [
+    'label' => E::ts('Primary Contact'),
+    'name' => 'primarycontact',
+    'url' => 'civicrm/admin/setting/primarycontact',
+    'permission' => 'administer CiviCRM',
+    'operator' => 'OR',
+    'separator' => 0,
+  ]);
+  _primarycontact_civix_navigationMenu($menu);
+}
+
+
+
 
 /**
  * Implements hook_civicrm_post().

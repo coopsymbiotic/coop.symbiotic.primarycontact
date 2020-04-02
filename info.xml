@@ -2,22 +2,23 @@
 <extension key="coop.symbiotic.primarycontact" type="module">
   <file>primarycontact</file>
   <name>Primary Contact</name>
-  <description>Have a relationship to store who is the primary contact and create it when using forms.</description>
+  <description>Make a distinction between employee and primary contact. Only primary contacts have edit access to organisation.</description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Samuel Vanhove</author>
     <email>samuel@symbiotic.coop</email>
   </maintainer>
   <urls>
-    <url desc="Main Extension Page">https://github.com/samuelsov/coop.symbiotic.primarycontact</url>
-    <url desc="Documentation">https://github.com/samuelsov/coop.symbiotic.memberid/blob/master/README.md</url>
+    <url desc="Main Extension Page">https://github.com/coopsymbiotic/coop.symbiotic.primarycontact</url>
+    <url desc="Documentation">https://github.com/coopsymbiotic/coop.symbiotic.memberid/blob/master/README.md</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
   <releaseDate>2018-02-01</releaseDate>
-  <version>1.0</version>
+  <version>1.1</version>
   <develStage>alpha</develStage>
   <compatibility>
     <ver>4.7</ver>
+    <ver>5.x</ver>
   </compatibility>
   <comments></comments>
   <civix>
