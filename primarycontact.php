@@ -290,7 +290,7 @@ function primarycontact_civicrm_tokenValues(&$values, $cids, $job = null, $token
     }
 
     // get extra info about current contact
-    $dao = &CRM_Core_DAO::executeQuery("
+    $dao = CRM_Core_DAO::executeQuery("
       SELECT id, first_name, last_name, organization_name as organization
       FROM civicrm_contact
       WHERE id IN ($contacts)"
@@ -302,7 +302,7 @@ function primarycontact_civicrm_tokenValues(&$values, $cids, $job = null, $token
     }
 
     // if contact is an organization, get main contact otherwise keep the individual contact
-    $dao = &CRM_Core_DAO::executeQuery("
+    $dao = CRM_Core_DAO::executeQuery("
       SELECT r.contact_id_b as cid, r.contact_id_a as primary_id, c.first_name, c.last_name, org.display_name as organization
       FROM civicrm_relationship r
         INNER JOIN civicrm_contact c ON c.id = r.contact_id_a
@@ -320,7 +320,7 @@ function primarycontact_civicrm_tokenValues(&$values, $cids, $job = null, $token
     }
 
     // if contact is an individual, get the organization id
-    $dao = &CRM_Core_DAO::executeQuery("
+    $dao = CRM_Core_DAO::executeQuery("
       SELECT r.contact_id_b as cid, r.contact_id_a as primary_id, c.first_name, c.last_name, org.display_name as organization
       FROM civicrm_relationship r
         INNER JOIN civicrm_contact c ON c.id = r.contact_id_a
