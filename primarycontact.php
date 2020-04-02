@@ -311,7 +311,7 @@ function primarycontact_civicrm_tokenValues(&$values, $cids, $job = null, $token
       FROM civicrm_relationship r
         INNER JOIN civicrm_contact c ON c.id = r.contact_id_a
         INNER JOIN civicrm_contact org ON org.id = r.contact_id_b
-      WHERE r.relationship_type_id = %1
+      WHERE r.relationship_type_id = %1 AND r.is_active
         AND r.contact_id_b IN ($contacts)",
       array(1 => array($relationship_type_id, 'Integer'))
     );
@@ -329,7 +329,7 @@ function primarycontact_civicrm_tokenValues(&$values, $cids, $job = null, $token
       FROM civicrm_relationship r
         INNER JOIN civicrm_contact c ON c.id = r.contact_id_a
         INNER JOIN civicrm_contact org ON org.id = r.contact_id_b
-      WHERE r.relationship_type_id = %1
+      WHERE r.relationship_type_id = %1 AND r.is_active
         AND r.contact_id_a IN ($contacts)",
       array(1 => array($relationship_type_id, 'Integer'))
     );
