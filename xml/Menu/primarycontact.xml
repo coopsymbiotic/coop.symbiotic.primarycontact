@@ -4,6 +4,7 @@
     <path>civicrm/admin/setting/primarycontact</path>
     <title>Primary Contact</title>
     <page_callback>CRM_Admin_Form_Generic</page_callback>
+    <access_arguments>administer CiviCRM</access_arguments>
   </item>
 </menu>
 
