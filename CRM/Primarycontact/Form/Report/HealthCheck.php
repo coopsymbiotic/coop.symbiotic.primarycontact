@@ -89,8 +89,10 @@ class CRM_Primarycontact_Form_Report_HealthCheck extends CRM_Report_Form {
           ],
         ],
         'group_bys' => [
-          'id' => [
+          'id_b' => [
             'title' => ts('Organization ID'),
+            'name' => 'id',
+            'default' => TRUE,
           ],
         ],
         'grouping' => 'contact_b_fields',
@@ -211,6 +213,13 @@ class CRM_Primarycontact_Form_Report_HealthCheck extends CRM_Report_Form {
             //'default_weight' => '2',
           ],
         ],
+        'group_bys' => [
+          'id_rel' => [
+            'title' => ts('Relationship ID'),
+            'name' => 'id',
+            'default' => TRUE,
+          ],
+        ],
 			],
       'civicrm_relationship_type' => [
         'dao' => 'CRM_Contact_DAO_RelationshipType',
@@ -286,6 +295,13 @@ class CRM_Primarycontact_Form_Report_HealthCheck extends CRM_Report_Form {
             'name' => 'sort_name',
           ],
         ],
+        'group_bys' => [
+          'id_a' => [
+            'title' => ts('Primary Contact ID'),
+            'name' => 'id',
+            'default' => TRUE,
+          ],
+        ],
       ],
       'civicrm_email_a' => [
         'dao' => 'CRM_Core_DAO_Email',
@@ -319,6 +335,7 @@ class CRM_Primarycontact_Form_Report_HealthCheck extends CRM_Report_Form {
       ],
       'civicrm_uf_match' => [
         'dao' => 'CRM_Core_DAO_UFMatch',
+        'grouping' => 'contact-account',
         'fields' => [
           'uf_id' => [
             'title' => ts('User ID'),
@@ -334,7 +351,11 @@ class CRM_Primarycontact_Form_Report_HealthCheck extends CRM_Report_Form {
             'name' => 'id',
           ],
         ],
-        'grouping' => 'contact_a_fields',
+        'group_bys' => [
+          'uf_id' => [
+            'title' => ts('User ID'),
+          ],
+        ],
       ],
     ];
     $this->_tagFilter = TRUE;
@@ -364,7 +385,6 @@ class CRM_Primarycontact_Form_Report_HealthCheck extends CRM_Report_Form {
    */
   public function select() {
     $select = [];
-    $groupBys = FALSE;
     $this->_columnHeaders = [];
 
     foreach ($this->_columns as $tableName => $table) {
@@ -446,6 +466,7 @@ class CRM_Primarycontact_Form_Report_HealthCheck extends CRM_Report_Form {
 		$this->_havingClauses[] = '(' . implode(' OR ', [
 			"civicrm_relationship_is_active IS NULL",
 			"civicrm_relationship_is_active != 1",
+			"civicrm_relationship_is_active = 1 AND civicrm_relationship_is_permission_a_b = 0",
 			"civicrm_contact_a_contact_id_a IS NULL",
 			"civicrm_email_a_id_a IS NULL",
 			"civicrm_email_a_on_hold_a",
@@ -467,10 +488,6 @@ class CRM_Primarycontact_Form_Report_HealthCheck extends CRM_Report_Form {
             }
           }
         }
-      }
-
-      if (!empty($this->_statFields) && (($append && count($this->_groupBy) <= 1) || (!$append))) {
-        $this->_rollup = " WITH ROLLUP";
       }
       $this->_groupBy = "GROUP BY " . implode(', ', $this->_groupBy) .  " {$this->_rollup} ";
     }
