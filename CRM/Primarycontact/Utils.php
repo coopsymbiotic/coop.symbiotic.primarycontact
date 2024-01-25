@@ -43,7 +43,8 @@ FROM civicrm_relationship r
   INNER JOIN civicrm_contact c ON c.id = r.contact_id_a
   INNER JOIN civicrm_contact org ON org.id = r.contact_id_b
 WHERE r.relationship_type_id = %1
-  AND r.contact_id_b = %2",
+  AND r.contact_id_b = %2
+  AND r.is_active = 1",
       array(
         1 => array($relationship_type_id, 'Integer'),
         2 => array($org_id, 'Integer'),
