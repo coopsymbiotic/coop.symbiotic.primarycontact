@@ -13,15 +13,23 @@
     <url desc="Documentation">https://github.com/coopsymbiotic/coop.symbiotic.memberid/blob/master/README.md</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
-  <releaseDate>2018-02-01</releaseDate>
-  <version>1.1</version>
-  <develStage>alpha</develStage>
+  <releaseDate>2024-11-25</releaseDate>
+  <version>1.1.1</version>
+  <develStage>stable</develStage>
   <compatibility>
-    <ver>4.7</ver>
-    <ver>5.x</ver>
+    <ver>5.73</ver>
   </compatibility>
-  <comments></comments>
+  <comments/>
   <civix>
     <namespace>CRM/Primarycontact</namespace>
+    <format>24.09.1</format>
   </civix>
+  <mixins>
+    <mixin>menu-xml@1.0.0</mixin>
+    <mixin>setting-php@1.0.0</mixin>
+  </mixins>
+  <classloader>
+    <psr0 prefix="CRM_" path="."/>
+    <psr4 prefix="Civi\" path="Civi"/>
+  </classloader>
 </extension>
